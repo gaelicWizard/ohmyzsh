@@ -47,7 +47,10 @@ if [[ -z "$ZSH_CACHE_DIR" ]]; then
   ZSH_CACHE_DIR="$ZSH/cache"
 fi
 
-# Make sure $ZSH_CACHE_DIR is writable, otherwise use a directory in $HOME
+# Make sure $ZSH_CACHE_DIR exists and is writable, otherwise use a directory in $HOME
+if [[ ! -d "$ZSH_CACHE_DIR" ]]; then
+  mkdir -p "$ZSH_CACHE_DIR" 2>/dev/null
+fi
 if [[ ! -w "$ZSH_CACHE_DIR" ]]; then
   ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/oh-my-zsh"
 fi
@@ -73,6 +76,9 @@ autoload -U compaudit compinit
 # and plugins exists, or else we will use the default custom/
 if [[ -z "$ZSH_CUSTOM" ]]; then
     ZSH_CUSTOM="$ZSH/custom"
+fi
+if [[ ! -d "$ZSH_CUSTOM" ]]; then
+  mkdir -p "$ZSH_CUSTOM"
 fi
 
 is_plugin() {
