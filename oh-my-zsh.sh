@@ -53,12 +53,18 @@ unset -f omz_f
 # Set ZSH_CUSTOM to the path where your custom config files
 # and plugins exists, or else we will use the default custom/
 [[ -n "$ZSH_CUSTOM" ]] || ZSH_CUSTOM="$ZSH/custom"
+if [[ ! -d "$ZSH_CUSTOM" ]]; then
+  mkdir -p "$ZSH_CUSTOM"
+fi
 
 # Set ZSH_CACHE_DIR to the path where cache files should be created
 # or else we will use the default cache/
 [[ -n "$ZSH_CACHE_DIR" ]] || ZSH_CACHE_DIR="$ZSH/cache"
 
-# Make sure $ZSH_CACHE_DIR is writable, otherwise use a directory in $HOME
+# Make sure $ZSH_CACHE_DIR exists and is writable, otherwise use a directory in $HOME
+if [[ ! -d "$ZSH_CACHE_DIR" ]]; then
+  mkdir -p "$ZSH_CACHE_DIR" 2>/dev/null
+fi
 if [[ ! -w "$ZSH_CACHE_DIR" ]]; then
   ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/oh-my-zsh"
 fi
