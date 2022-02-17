@@ -17,7 +17,7 @@ function title {
   : ${2=$1}
 
   case "$TERM" in
-    cygwin|xterm*|putty*|rxvt*|konsole*|ansi|mlterm*|alacritty|st*)
+    cygwin|xterm*|putty*|rxvt*|konsole*|ansi|mlterm*|alacritty|st*|nsterm*)
       print -Pn "\e]2;${2:q}\a" # set window name
       print -Pn "\e]1;${1:q}\a" # set tab name
       ;;
@@ -25,15 +25,18 @@ function title {
       print -Pn "\ek${1:q}\e\\" # set screen hardstatus
       ;;
     *)
-      if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
+      case "$TERM_PROGRAM" in
+      "iTerm.app"|"Apple_Terminal")
         print -Pn "\e]2;${2:q}\a" # set window name
         print -Pn "\e]1;${1:q}\a" # set tab name
-      else
+        ;;
+      *)
         # Try to use terminfo to set the title if the feature is available
         if (( ${+terminfo[fsl]} && ${+terminfo[tsl]} )); then
           print -Pn "${terminfo[tsl]}$1${terminfo[fsl]}"
         fi
-      fi
+        ;;
+      esac
       ;;
   esac
 }
@@ -113,22 +116,22 @@ fi
 # Based on this answer: https://superuser.com/a/315029
 # With extra fixes to handle multibyte chars and non-UTF-8 locales
 
+# Emits the control sequence to notify Terminal.app of the cwd
+# Identifies the directory using a file: URI scheme, including
+# the host name to disambiguate local vs. remote paths.
+function update_terminalapp_cwd() {
+  emulate -L zsh
+
+  # Percent-encode the host and path names.
+  local URL_HOST URL_PATH
+  URL_HOST="$(omz_urlencode -P $HOST)" || return 1
+  URL_PATH="$(omz_urlencode -P $PWD)" || return 1
+
+  # Terminal.app-specific control sequence
+  printf '\e]7;%s\a' "file://$URL_HOST$URL_PATH"
+}
+
 if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]] && [[ -z "$INSIDE_EMACS" ]]; then
-  # Emits the control sequence to notify Terminal.app of the cwd
-  # Identifies the directory using a file: URI scheme, including
-  # the host name to disambiguate local vs. remote paths.
-  function update_terminalapp_cwd() {
-    emulate -L zsh
-
-    # Percent-encode the host and path names.
-    local URL_HOST URL_PATH
-    URL_HOST="$(omz_urlencode -P $HOST)" || return 1
-    URL_PATH="$(omz_urlencode -P $PWD)" || return 1
-
-    # Undocumented Terminal.app-specific control sequence
-    printf '\e]7;%s\a' "file://$URL_HOST$URL_PATH"
-  }
-
   # Use a precmd hook instead of a chpwd hook to avoid contaminating output
   add-zsh-hook precmd update_terminalapp_cwd
   # Run once to get initial cwd set
