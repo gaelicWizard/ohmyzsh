@@ -199,7 +199,7 @@ EOF
     return 1
   fi
 
-  ZSH="$ZSH" command zsh -f "$ZSH/tools/changelog.sh" "$version" "${2:-}" "$format"
+  (export ZSH; command zsh -f "$ZSH/tools/changelog.sh" "$version" "${2:-}" "$format")
 }
 
 function _omz::plugin {
@@ -910,7 +910,7 @@ function _omz::update {
   zstyle -s ':omz:update' verbose verbose_mode || verbose_mode=default
   zstyle -s ':omz:update' cooldown cooldown_days || cooldown_days=0
   [[ $cooldown_days == <-> ]] || cooldown_days=0
-  ZSH="$ZSH" command zsh -f "$ZSH/tools/upgrade.sh" -i -v $verbose_mode -c $cooldown_days || return $?
+  (export ZSH; command zsh -f "$ZSH/tools/upgrade.sh" -i -v $verbose_mode -c $cooldown_days) || return $?
 
   # Update last updated file
   zmodload zsh/datetime

@@ -160,13 +160,13 @@ function update_ohmyzsh() {
   fi
 
   if [[ "$update_mode" != background-alpha ]] \
-    && LANG= ZSH="$ZSH" zsh -f "$ZSH/tools/upgrade.sh" -i -v $verbose_mode -c $cooldown_days; then
+    && (export ZSH; LANG= zsh -f "$ZSH/tools/upgrade.sh" -i -v $verbose_mode -c $cooldown_days); then
     update_last_updated_file
     return $?
   fi
 
   local exit_status error
-  if error=$(LANG= ZSH="$ZSH" zsh -f "$ZSH/tools/upgrade.sh" -i -v silent -c $cooldown_days 2>&1); then
+  if error=$(export ZSH; LANG= zsh -f "$ZSH/tools/upgrade.sh" -i -v silent -c $cooldown_days 2>&1); then
     update_last_updated_file 0 "Update successful"
   else
     exit_status=$?

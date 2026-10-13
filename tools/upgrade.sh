@@ -294,7 +294,7 @@ if perform_update; then
 
     # Print changelog to the terminal
     if [[ $interactive == true && $verbose_mode == default ]]; then
-      ZSH="$ZSH" command zsh -f "$ZSH/tools/changelog.sh" HEAD "$last_commit"
+      (export ZSH; command zsh -f "$ZSH/tools/changelog.sh" HEAD "$last_commit")
     fi
 
     if [[ $verbose_mode != silent ]]; then
