@@ -13,35 +13,40 @@ function upgrade_oh_my_zsh() {
   omz update
 }
 
-function open_command() {
-  local open_cmd
+# define the open command
+function browser_command() {
+      # If a URL is passed, $BROWSER might be set to a local browser within SSH.
+      # See https://github.com/ohmyzsh/ohmyzsh/issues/11098
+    if [[ -n "$BROWSER" && "$1" = (http|https)://* ]]; then
+      "$BROWSER" "$@"
+    else
+      return 1
+    fi
+}
 
-  # define the open command
-  case "$OSTYPE" in
-    darwin*)  open_cmd='open' ;;
-    cygwin*)  open_cmd='cygstart' ;;
-    linux*)   [[ "$(uname -r)" != *icrosoft* ]] && open_cmd='nohup xdg-open' || {
-                open_cmd='cmd.exe /c start ""'
+case "$OSTYPE" in
+  darwin*)  function open_command() { browser_command "$@" || open "$@" };;
+  cygwin*)  function open_command() { browser_command "$@" || cygstart "$@" } ;;
+  msys*)    function open_command() { browser_command "$@" || start "" "$@" } ;;
+
+  linux*)   if [[ "$(uname -r)" != *icrosoft* ]]; then
+              function open_command() { browser_command "$@" || nohup xdg-open "$@" }
+            else
+              function open_command() {
+                local open_cmd='cmd.exe /c start ""'
                 [[ -e "$1" ]] && { 1="$(wslpath -w "${1:a}")" || return 1 }
                 [[ "$1" = (http|https)://* ]] && {
                   1="$(echo "$1" | sed -E 's/([&|()<>^])/^\1/g')" || return 1
                 }
-              } ;;
-    msys*)    open_cmd='start ""' ;;
-    *)        echo "Platform $OSTYPE not supported"
-              return 1
-              ;;
-  esac
+                ${=open_cmd} "$@"
+              }
+            fi
+            ;;
+  *)        function open_command() { echo "Platform $OSTYPE not supported"
+              return 1 }
+            ;;
+esac
 
-  # If a URL is passed, $BROWSER might be set to a local browser within SSH.
-  # See https://github.com/ohmyzsh/ohmyzsh/issues/11098
-  if [[ -n "$BROWSER" && "$1" = (http|https)://* ]]; then
-    "$BROWSER" "$@"
-    return
-  fi
-
-  ${=open_cmd} "$@" &>/dev/null
-}
 
 # take functions
 
