@@ -42,8 +42,14 @@ case "$OSTYPE" in
               }
             fi
             ;;
-  *)        function open_command() { echo "Platform $OSTYPE not supported"
-              return 1 }
+  *)        function open_command() { 
+              echo "${0}: Platform $OSTYPE not supported" >&2
+              if [[ -n "${commands[xdg-open]}" ]]; then
+                browser_command "$@" || xdg-open "$@"
+              else
+                browser_command "$@"
+              fi
+            }
             ;;
 esac
 
